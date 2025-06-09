@@ -2,6 +2,7 @@
 #define TimeKeeper_h
 
 #include <Adafruit_SSD1306.h>
+#include "Button.h"
 
 struct Time {
   int Days;
@@ -22,9 +23,9 @@ public:
 
 private:
   Adafruit_SSD1306 _display;
-  int _btnA;
-  int _btnB;
-  int _btnC;
+  Button _btnA;
+  Button _btnB;
+  Button _btnC;
   unsigned long _timeNow = 0;
   unsigned long _timeLast = 0;
   int _startingHour;
@@ -36,10 +37,8 @@ private:
   void _calculateTime();
   void _btnChecker();
   void _drawImage(int x, int y, bool fill);
-  bool _flagBtnALOW = false;
   bool _flagOnSetup = false;
   bool _flagSetupHour = true;
-  unsigned long _btnBHighTimestamp = 0;
 };
 
 #endif

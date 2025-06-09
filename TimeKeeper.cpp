@@ -1,14 +1,9 @@
-#include <Adafruit_SSD1306.h>
 #include "TimeKeeper.h"
 
 TimeKeeper::TimeKeeper(int btnA, int btnB, int btnC) {
-  _btnA = btnA;
-  _btnB = btnB;
-  _btnC = btnC;
-
-  pinMode(_btnA, INPUT_PULLUP);
-  pinMode(_btnB, INPUT_PULLUP);
-  pinMode(_btnC, INPUT_PULLUP);
+  _btnA = Button(btnA, INPUT_PULLUP, LOW);
+  _btnB = Button(btnB, INPUT_PULLUP, LOW);
+  _btnC = Button(btnC, INPUT_PULLUP, LOW);
 }
 
 void TimeKeeper::begin(Adafruit_SSD1306 display, int hour, int minute) {
@@ -24,27 +19,23 @@ void TimeKeeper::begin(Adafruit_SSD1306 display, int hour, int minute, int daily
 }
 
 void TimeKeeper::loop() {
+  _btnA.loop();
+  _btnB.loop();
+  _btnC.loop();
   _btnChecker();
   _calculateTime();
 }
 
 void TimeKeeper::_btnChecker() {
-  if (!_flagBtnALOW && digitalRead(_btnA) == LOW) {
-    _flagBtnALOW = true;
+  if (_btnA.isActive()) {
     if (_flagOnSetup) {
       _flagSetupHour = !_flagSetupHour;
     }
-  } else if (digitalRead(_btnA) == HIGH) {
-    _flagBtnALOW = false;
   }
 
-  if (digitalRead(_btnB) == LOW) {
+  if (_btnB.isActive()) {
     if (!_flagOnSetup) {
-      unsigned long currMillis = millis();
-      if (_btnBHighTimestamp == 0) {
-        _btnBHighTimestamp = currMillis;
-      }
-      if (_btnBHighTimestamp > 0 && currMillis - _btnBHighTimestamp > 3000) {
+      if (_btnB.activeTime() > 3000) {
         _flagOnSetup = true;
         _flagSetupHour = true;
         _setupTime = _time;
@@ -62,13 +53,10 @@ void TimeKeeper::_btnChecker() {
         }
       }
     }
-  } else if (digitalRead(_btnB) == HIGH) {
-    _btnBHighTimestamp = 0;
   }
 
-  if (digitalRead(_btnC) == LOW) {
+  if (_btnC.isActive()) {
     _flagOnSetup = false;
-  } else if (digitalRead(_btnC) == HIGH) {
   }
 }
 
