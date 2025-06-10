@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "TimeKeeper.h"
 
 TimeKeeper::TimeKeeper(int btnA, int btnB, int btnC) {
@@ -28,7 +29,7 @@ void TimeKeeper::loop() {
 
 void TimeKeeper::_btnChecker() {
   if (_btnA.isActive()) {
-    if (_flagOnSetup) {
+    if (_flagOnSetup && _btnA.activeTime() % 200 == 0) {
       _flagSetupHour = !_flagSetupHour;
     }
   }
@@ -40,7 +41,7 @@ void TimeKeeper::_btnChecker() {
         _flagSetupHour = true;
         _setupTime = _time;
       }
-    } else {
+    } else if (_btnB.activeTime() % 200 < 25) {
       if (_flagSetupHour) {
         _setupTime.Hours += 1;
         if (_setupTime.Hours == 24) {
@@ -56,7 +57,12 @@ void TimeKeeper::_btnChecker() {
   }
 
   if (_btnC.isActive()) {
-    _flagOnSetup = false;
+    if (_flagOnSetup) {
+      _time.Hours = _setupTime.Hours;
+      _time.Minutes = _setupTime.Minutes;
+      _time.Seconds = 0;
+      _flagOnSetup = false;
+    }
   }
 }
 
@@ -66,7 +72,7 @@ void TimeKeeper::_calculateTime() {
   _time.Milis = _timeNow - _timeLast;
 
   if (_time.Milis >= 1000) {
-    _timeLast = _timeNow;
+    _timeLast = _timeNow - 19; // sweet spot
     _time.Seconds += 1;
   }
   if (_time.Seconds == 60) {
@@ -107,13 +113,13 @@ void TimeKeeper::showTime() {
     }
   } else {
     if (_flagSetupHour) {
-      if (_time.Milis < 500) {
+      if (_time.Milis < 500 || _btnB.isActive()) {
         sprintf(timeString, "%02i:%02i", _setupTime.Hours, _setupTime.Minutes);
       } else {
         sprintf(timeString, "  :%02i", _setupTime.Minutes);
       }
     } else {
-      if (_time.Milis < 500) {
+      if (_time.Milis < 500 || _btnB.isActive()) {
         sprintf(timeString, "%02i:%02i", _setupTime.Hours, _setupTime.Minutes);
       } else {
         sprintf(timeString, "%02i:", _setupTime.Hours);
