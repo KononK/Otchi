@@ -3,6 +3,7 @@
 
 #include <Adafruit_SSD1306.h>
 #include "Button.h"
+#include "MainScreen.h"
 
 struct Time {
   int Days;
@@ -14,18 +15,20 @@ struct Time {
 
 class TimeKeeper {
 public:
-  TimeKeeper(int btnA, int btnB, int btnC);
+  TimeKeeper(int btnA, int btnB, int btnC, int *currentScreen);
   void begin(Adafruit_SSD1306 display, int hour, int minute);
   void begin(Adafruit_SSD1306 display, int hour, int minute, int dailyErrorFast, int dailyErrorBehind);
-  void loop();
+  void loop(bool isActive);
   Time getTime();
   void showTime();
+  void tick(void (*func)());
 
 private:
   Adafruit_SSD1306 _display;
   Button _btnA;
   Button _btnB;
   Button _btnC;
+  int *_currentScreen;
   unsigned long _timeNow = 0;
   unsigned long _timeLast = 0;
   int _startingHour;
@@ -39,6 +42,8 @@ private:
   void _drawImage(int x, int y, bool fill);
   bool _flagOnSetup = false;
   bool _flagSetupHour = true;
+  void (*_tick)();
+;
 };
 
 #endif

@@ -1,10 +1,11 @@
 #include "Arduino.h"
 #include "TimeKeeper.h"
 
-TimeKeeper::TimeKeeper(int btnA, int btnB, int btnC) {
+TimeKeeper::TimeKeeper(int btnA, int btnB, int btnC, int *currentScreen) {
   _btnA = Button(btnA, INPUT_PULLUP, LOW);
   _btnB = Button(btnB, INPUT_PULLUP, LOW);
   _btnC = Button(btnC, INPUT_PULLUP, LOW);
+  _currentScreen = currentScreen;
 }
 
 void TimeKeeper::begin(Adafruit_SSD1306 display, int hour, int minute) {
@@ -19,15 +20,17 @@ void TimeKeeper::begin(Adafruit_SSD1306 display, int hour, int minute, int daily
   _dailyErrorBehind = dailyErrorBehind;
 }
 
-void TimeKeeper::loop() {
-  _btnA.loop();
-  _btnB.loop();
-  _btnC.loop();
-  _btnChecker();
+void TimeKeeper::loop(bool isActive) {
+  if (isActive) {
+    _btnChecker();
+  }
   _calculateTime();
 }
 
 void TimeKeeper::_btnChecker() {
+  _btnA.loop();
+  _btnB.loop();
+  _btnC.loop();
   if (_btnA.isActive()) {
     if (_flagOnSetup && _btnA.activeTime() % 200 == 0) {
       _flagSetupHour = !_flagSetupHour;
@@ -62,6 +65,8 @@ void TimeKeeper::_btnChecker() {
       _time.Minutes = _setupTime.Minutes;
       _time.Seconds = 0;
       _flagOnSetup = false;
+    } else {
+      *_currentScreen = DISPLAY_SCREEN_MAIN;
     }
   }
 }
@@ -72,8 +77,9 @@ void TimeKeeper::_calculateTime() {
   _time.Milis = _timeNow - _timeLast;
 
   if (_time.Milis >= 1000) {
-    _timeLast = _timeNow - 19; // sweet spot
+    _timeLast = _timeNow - 19;  // sweet spot
     _time.Seconds += 1;
+    _tick();
   }
   if (_time.Seconds == 60) {
     _time.Seconds = 0;
@@ -173,4 +179,8 @@ void TimeKeeper::_drawImage(int x, int y, bool fill) {
     _display.drawTriangle(x + 20, y + 10, x + 10, y + 20, x + 10, y + 10, WHITE);
     _display.drawTriangle(x, y + 20, x + 10, y + 20, x + 10, y + 10, WHITE);
   }
+}
+
+void TimeKeeper::tick(void (*func)()){
+  _tick = func;
 }
