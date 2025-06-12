@@ -2,6 +2,7 @@
 #define MainScreen_h
 
 #include <Adafruit_SSD1306.h>
+#include "Assets.h"
 #include "Button.h"
 
 #define DISPLAY_SCREEN_MAIN 0
@@ -27,6 +28,7 @@ private:
   int _posY;
   bool _isRight;
   bool _isUp;
+  uint8_t _animateCode;
 };
 
 #endif

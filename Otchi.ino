@@ -14,6 +14,7 @@
 #define BTN_C 4
 
 int currentScreen = 0;
+int ledOn = false;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 TimeKeeper timeKeeper(BTN_A, BTN_B, BTN_C, &currentScreen);
@@ -26,6 +27,8 @@ void setup() {
     Serial.println(F("SSD1306 allocation failed"));
     for (;;);
   }
+
+  pinMode(LED_BUILTIN, OUTPUT);
 
   timeKeeper.begin(display, 15, 0);
   timeKeeper.tick(tick);
@@ -40,6 +43,13 @@ void loop() {
 
 void tick() {
   mainScreen.tick();
+  if (ledOn) {
+    ledOn = false;
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
+    ledOn = true;
+    digitalWrite(LED_BUILTIN, LOW);
+  }
 }
 
 void updateScreen() {
